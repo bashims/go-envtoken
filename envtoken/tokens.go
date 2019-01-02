@@ -53,6 +53,10 @@ func (e *Environment) Get(a string) *EnvToken {
 // GetValue return either the set value or default value for environment key.
 func (e *Environment) GetValue(k string) *string {
 	t := e.Get(k)
+	if t == nil {
+		return nil
+	}
+
 	if *t.Value != "" {
 		return t.Value
 	}
@@ -60,6 +64,15 @@ func (e *Environment) GetValue(k string) *string {
 		return t.DefaultValue
 	}
 	return nil
+}
+
+// GetBoolean return
+func (e *Environment) GetBoolean(k string) bool {
+	v := e.GetValue(k)
+	if v == nil {
+		return false
+	}
+	return GetBoolean(*v)
 }
 
 // EnvKeyNotSetError denotes an missing environment key
@@ -170,5 +183,10 @@ func NewEnvironment(envTokens []*EnvToken) (*Environment, *EnvErrorCollection) {
 
 //BoolFromEnv return boolean value based on the the environment key's value.
 func BoolFromEnv(key string) bool {
-	return reBoolean.MatchString(os.Getenv(key))
+	return GetBoolean(os.Getenv(key))
+}
+
+//GetBoolean return boolean value based on value.
+func GetBoolean(value string) bool {
+	return reBoolean.MatchString(value)
 }
