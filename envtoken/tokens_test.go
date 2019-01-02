@@ -126,6 +126,51 @@ func TestEnvironmentDefaults(t *testing.T) {
 
 }
 
+func TestEnvironmentGetBoolean(t *testing.T) {
+	token1 := "_TEST_BOOL_1"
+	token2 := "_TEST_BOOL_2"
+	token3 := "_TEST_BOOL_3"
+	envTokens := []*EnvToken{
+		NewEnvToken(token1, "yes", false),
+		NewEnvToken(token2, "false", false),
+	}
+	unsetEnvTokens(envTokens)
+
+	defer unsetEnvTokens(envTokens)
+
+	env, errCollection := NewEnvironment(envTokens)
+	if errCollection != nil {
+		t.Fatalf("Error not expected, %v", errCollection.GetError())
+	}
+
+	expected := true
+	actual := env.GetBoolean(token1)
+	if actual != expected {
+		t.Errorf("%v has unexpected boolean value, expected %v, actual %v", token1, actual, expected)
+	}
+
+	expected = false
+	actual = env.GetBoolean(token2)
+	if actual != expected {
+		t.Errorf("%v has unexpected boolean value, expected %v, actual %v", token2, actual, expected)
+	}
+
+	unsetEnvTokens(envTokens)
+	//os.Setenv(token1, "no")
+	env, errCollection = NewEnvironment(envTokens)
+	if errCollection != nil {
+		t.Fatalf("Error not expected, %v", errCollection.GetError())
+	}
+
+	// test un-registered token
+	expected = false
+	actual = env.GetBoolean(token3)
+	if actual != expected {
+		t.Errorf("%v has unexpected boolean value, expected %v, actual %v", token3, actual, expected)
+	}
+
+}
+
 func TestBoolFromEnvFalse(t *testing.T) {
 	expected := false
 	key := "_BOOL_FALSE"
